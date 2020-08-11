@@ -1,0 +1,32 @@
+﻿kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: mnist-flask-app
+  labels:
+    name: mnist-build
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'mnist-flask-app:latest'
+  strategy:
+    type: Docker
+    dockerStrategy:
+      env:
+{{#OPENSHIFT_BUILDCONFIG_PROXY}}
+        - name: HTTP_PROXY
+          value: "{{OPENSHIFT_BUILDCONFIG_PROXY}}"
+        - name: http_proxy
+          value: "{{OPENSHIFT_BUILDCONFIG_PROXY}}"
+        - name: HTTPS_PROXY
+          value: "{{OPENSHIFT_BUILDCONFIG_PROXY}}"
+        - name: https_proxy
+          value: "{{OPENSHIFT_BUILDCONFIG_PROXY}}"
+{{/OPENSHIFT_BUILDCONFIG_PROXY}}
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/dmrub/mnist-flask-app'
+  triggers:
+    - type: ConfigChange
+  runPolicy: Serial

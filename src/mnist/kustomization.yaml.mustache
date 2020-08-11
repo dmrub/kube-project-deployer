@@ -3,5 +3,11 @@ kind: Kustomization
 namespace: "{{PROJECT_NAME}}"
 resources:
 - mnist-model-serving.yaml
+{{#USE_OPENSHIFT_BUILDCONFIG}}
+- mnist-flask-app-imagestream.yaml
+- mnist-flask-app-buildconfig.yaml
+{{/USE_OPENSHIFT_BUILDCONFIG}}
 - mnist-flask-app.yaml
+{{#USE_OPENSHIFT}}
 - mnist-route.yaml
+{{/USE_OPENSHIFT}}

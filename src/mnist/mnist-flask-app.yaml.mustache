@@ -25,12 +25,20 @@ spec:
   strategy: {}
   template:
     metadata:
+      # See https://docs.openshift.com/container-platform/3.11/dev_guide/managing_images.html#using-is-with-k8s
+      annotations:
+        alpha.image.policy.openshift.io/resolve-names: '*'
       labels:
         app: mnist-flask-app
     spec:
       containers:
       - name: mnist-flask-app
+{{#USE_OPENSHIFT_BUILDCONFIG}}
+        image: "mnist-flask-app"
+{{/USE_OPENSHIFT_BUILDCONFIG}}
+{{^USE_OPENSHIFT_BUILDCONFIG}}
         image: "dmrub/mnist-flask-app"
+{{/USE_OPENSHIFT_BUILDCONFIG}}
         imagePullPolicy: "Always"
         ports:
           - name: http
