@@ -1,0 +1,9 @@
+.vscode
+.idea
+*~
+*.bak
+*.pyc
+/resources
+/dest
+/minikube.cfg
+/settings.cfg

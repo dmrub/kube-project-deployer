@@ -1,0 +1,46 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "mnist-flask-app"
+spec:
+  ports:
+    # the port that this service should serve on
+    - name: http
+      port: 80
+      targetPort: http
+  # label keys and values that must match in order to receive traffic for this service
+  selector:
+    app: mnist-flask-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mnist-flask-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mnist-flask-app
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: mnist-flask-app
+    spec:
+      containers:
+      - name: mnist-flask-app
+        image: "dmrub/mnist-flask-app"
+        imagePullPolicy: "Always"
+        ports:
+          - name: http
+            containerPort: 5000
+        env:
+          - name: PORT
+            value: "5000"
+          - name: TF_SERVING_URI
+            value: "http://mnist-model-serving:8501/v1/models/mnist_model/versions/1:predict"
+        #command: [ "/bin/sh" ]
+        #args: ["-c", "trap exit INT TERM; while true; do sleep 10000000; done"]
+        #args: ["-c", "wait-for-it influxdb:8086 --strict -- influxd restore -portable -database refit -host \"${INFLUXDB_HOST}\" /data"]
+      restartPolicy: Always

@@ -1,0 +1,40 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "mnist-model-serving"
+spec:
+  ports:
+    # the port that this service should serve on
+    - name: http
+      port: 8501
+      targetPort: 8501
+  # label keys and values that must match in order to receive traffic for this service
+  selector:
+    app: mnist-model-serving
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mnist-model-serving
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mnist-model-serving
+  template:
+    metadata:
+      labels:
+        app: mnist-model-serving
+    spec:
+      containers:
+      - name: mnist-model-serving
+        image: "dmrub/mnist_model_serving"
+        imagePullPolicy: "Always"
+        ports:
+          - name: http
+            containerPort: 8501
+        #command: [ "/bin/sh" ]
+        #args: ["-c", "trap exit INT TERM; while true; do sleep 10000000; done"]
+        #args: ["-c", "wait-for-it influxdb:8086 --strict -- influxd restore -portable -database refit -host \"${INFLUXDB_HOST}\" /data"]
+
