@@ -13,10 +13,27 @@ spec:
   selector:
     app: mnist-flask-app
 ---
+# References:
+# https://docs.openshift.com/container-platform/3.11/dev_guide/managing_images.html#using-is-with-k8s
+# https://access.redhat.com/documentation/en-us/openshift_container_platform/3.11/html/developer_guide/dev-guide-managing-images
+# https://itnext.io/variations-on-imagestreams-in-openshift-4-f8ee5e8be633
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mnist-flask-app
+  annotations:
+{{#USE_OPENSHIFT_BUILDCONFIG}}
+    image.openshift.io/triggers: |
+      [
+        {
+          "from": {
+            "kind":"ImageStreamTag",
+            "name":"mnist-flask-app:latest"
+          },
+          "fieldPath": "spec.template.spec.containers[?(@.name==\"mnist-flask-app\")].image"
+        }
+      ]
+{{/USE_OPENSHIFT_BUILDCONFIG}}
 spec:
   replicas: 1
   selector:
@@ -25,7 +42,6 @@ spec:
   strategy: {}
   template:
     metadata:
-      # See https://docs.openshift.com/container-platform/3.11/dev_guide/managing_images.html#using-is-with-k8s
       annotations:
         alpha.image.policy.openshift.io/resolve-names: '*'
       labels:
@@ -34,7 +50,7 @@ spec:
       containers:
       - name: mnist-flask-app
 {{#USE_OPENSHIFT_BUILDCONFIG}}
-        image: "mnist-flask-app"
+        image: "mnist-flask-app:latest"
 {{/USE_OPENSHIFT_BUILDCONFIG}}
 {{^USE_OPENSHIFT_BUILDCONFIG}}
         image: "dmrub/mnist-flask-app"
