@@ -91,6 +91,13 @@ case "$COMMAND" in
 
         ;;
     status)
+        if [[ -n "$OPENSHIFT_CLIENT" ]]; then
+            echo "* OpenShift status"
+            (
+                run-oc-ctx status --suggest || true;
+            )
+            echo;
+        fi
         for kdir in "${KUSTOMIZE_DIRS[@]}"; do
             (
                 run-kubectl-ctx get -k "$kdir" || true;
