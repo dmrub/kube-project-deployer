@@ -52,18 +52,23 @@ fi
 
 # Wait for API server to become avilable
 
-echo "Check availability of the Kubernetes API server"
+echo "* Check availability of the Kubernetes API server ..."
 for i in {1..5}; do
     if run-kubectl-ctx version &>/dev/null; then
         break
     else
-        echo "Wait for Kubernetes API server to become available"
+        echo "* Wait for Kubernetes API server to become available"
         sleep 2
     fi
 done
+echo "* Kubernetes API server available"
 
 case "$COMMAND" in
     start)
+        echo "* Render templates"
+        "$SCRIPTS_DIR/render-templates.sh"
+        echo ""
+
         run-before-start-callback
 
         for kdir in "${KUSTOMIZE_DIRS[@]}"; do
