@@ -1,5 +1,31 @@
 # shellcheck shell=bash
 
+oc-get-project-phase() {
+    local phase
+    if ! phase=$(run-oc-ctx get project "$1" -o go-template='{{.status.phase}}' 2>/dev/null); then
+        return 1
+    fi
+    echo "$phase"
+}
+
+oc-wait-for-project() {
+    local phase
+    while true; do
+        if phase=$(oc-get-project-phase "$1"); then
+            if [[ "$phase" == "Active" ]]; then
+                echo "$phase"
+                return 0
+            else
+                echo >&2 "* Phase of the OpenShift project $1 is $phase, waiting ..."
+                sleep 1
+            fi
+        else
+            echo ""
+            return 1
+        fi
+    done
+}
+
 before-start() {
     echo "* Creating project:"
     echo "PROJECT_NAME: $PROJECT_NAME"
@@ -10,8 +36,10 @@ before-start() {
     echo "PROJECT_HOSTNAME: $PROJECT_HOSTNAME"
     echo
 
+    local phase
+
     if is-true "$USE_OC_NEW_PROJECT"; then
-        if run-oc-ctx get project "$PROJECT_NAME" >& /dev/null; then
+        if phase=$(oc-wait-for-project "$PROJECT_NAME"); then
             echo "* OpenShift project $PROJECT_NAME already exists"
         else
             echo "* Creating OpenShift project $PROJECT_NAME ..."
@@ -24,7 +52,9 @@ before-start() {
 
 after-stop() {
     if is-true "$USE_OC_NEW_PROJECT"; then
-        if run-oc-ctx get project "$PROJECT_NAME" >& /dev/null; then
+        local phase
+
+        if phase=$(oc-wait-for-project "$PROJECT_NAME"); then
             echo "* Deleting OpenShift project $PROJECT_NAME ..."
             run-oc-ctx delete project "$PROJECT_NAME"
         else
