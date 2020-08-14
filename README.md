@@ -15,11 +15,11 @@ You need to install openssl, git, and [kubectl](https://kubernetes.io/docs/tasks
 
 1. Link or copy `minikube.cfg` and `settings.cfg` from one of the subdirectories of the `config-examples` directory to the directory where this file is located.
 2. For using [minikube](https://minikube.sigs.k8s.io/) install it first then edit `minikube.cfg` file and set USE_MINIKUBE variable to yes: `USE_MINIKUBE=yes`.
-4. If you use OpenShift, log in with the `oc login` command, if you use Kubernetes switch to the Kubernetes context which you want to use for deployment.
-5. Run the command `scripts/print-kubectl-config.sh` and add the printed lines to the file `settings.cfg` or replace them.
-6. Customize `settings.cfg` if needed.
-7. Run the `init.sh` script. It will initialize development environment.
-8. Start or stop services by running `servicectl.sh` script:
+3. If you use OpenShift, log in with the `oc login` command, if you use Kubernetes switch to the Kubernetes context which you want to use for deployment.
+4. Run the command `scripts/print-kubectl-config.sh` and add the printed lines to the file `settings.cfg` or replace them.
+5. Customize `settings.cfg` if needed.
+6. Run the `init.sh` script. It will initialize development environment.
+7. Start or stop services by running `servicectl.sh` script:
    ```
     $ ./servicectl.sh --help
     Start project services
