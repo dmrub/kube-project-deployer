@@ -65,8 +65,8 @@ echo "* Kubernetes API server available"
 
 case "$COMMAND" in
     start)
-        echo "* Render templates"
-        "$SCRIPTS_DIR/render-templates.sh"
+        echo "* Preprocess templates"
+        "$SCRIPTS_DIR/preprocess-templates.sh"
         echo ""
 
         run-before-start-callback

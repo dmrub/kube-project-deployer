@@ -17,8 +17,8 @@ echo "* Update resources"
 #echo "* Update istio"
 #istio-update
 
-echo "* Render templates"
-"$THIS_DIR/scripts/render-templates.sh"
+echo "* Preprocess templates"
+"$THIS_DIR/scripts/preprocess-templates.sh"
 
 echo "* Finished initialization"
 echo "

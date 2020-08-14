@@ -32,4 +32,4 @@ You need to install openssl, git, and [kubectl](https://kubernetes.io/docs/tasks
     help              print this
 
    ```
-9.  If you have changed the configuration to `*.cfg` files, you will need to update files rendered from mustache templates by running the script `scripts/render-templates.sh'.
+9.  If you have changed the configuration to `*.cfg` files, you will need to update files generated from mustache templates by running the script `scripts/preprocess-templates.sh'.
