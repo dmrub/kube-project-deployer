@@ -4,8 +4,8 @@ SCRIPTS_DIR=$( (cd "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P) )
 ROOT_DIR=$SCRIPTS_DIR/..
 
 # Source shell library
-# shellcheck source=kube-shlib.sh
-. "$SCRIPTS_DIR/kube-shlib.sh"
+# shellcheck source=shlib.sh
+. "$SCRIPTS_DIR/shlib.sh"
 
 # Source mo (mustache preprocessor)
 # https://github.com/tests-always-included/mo
