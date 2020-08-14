@@ -96,29 +96,6 @@ load-script() {
     fi
 }
 
-
-# http://stackoverflow.com/questions/1203583/how-do-i-rename-a-bash-function
-# http://unix.stackexchange.com/questions/29689/how-do-i-redefine-a-bash-function-in-terms-of-old-definition
-copy-fn() {
-    local fn;
-    fn="$(declare -f "$1")" && eval "function $(printf %q "$2") ${fn#*"()"}";
-}
-
-rename-fn() {
-    copy-fn "$@" && unset -f "$1";
-}
-
-is-true() {
-    case "$1" in
-        true|yes|1) return 0;
-    esac
-    return 1
-}
-
-is-array() {
-    declare -p "$1" &>/dev/null && [[ "$(declare -p "$1")" =~ "declare -a" ]]
-}
-
 # Set defaults
 unset \
     USE_MINIKUBE \

@@ -1,5 +1,4 @@
 #!/bin/bash
-# global config
 
 set -eo pipefail
 
@@ -14,6 +13,28 @@ fatal() {
 
 message() {
     echo >&2 "$*"
+}
+
+is-true() {
+    case "$1" in
+        true | yes | 1) return 0 ;;
+    esac
+    return 1
+}
+
+is-array() {
+    declare -p "$1" &>/dev/null && [[ "$(declare -p "$1")" =~ "declare -a" ]]
+}
+
+# http://stackoverflow.com/questions/1203583/how-do-i-rename-a-bash-function
+# http://unix.stackexchange.com/questions/29689/how-do-i-redefine-a-bash-function-in-terms-of-old-definition
+copy-fn() {
+    local fn;
+    fn="$(declare -f "$1")" && eval "function $(printf %q "$2") ${fn#*"()"}";
+}
+
+rename-fn() {
+    copy-fn "$@" && unset -f "$1";
 }
 
 # Define kubectl-related functions
@@ -36,19 +57,22 @@ define-kubectl-funcs() {
     elif [[ -n "$KUBECTL_BIN" ]]; then
         KUBECTL=${KUBECTL_BIN}
     elif [[ -z "$KUBECTL" ]]; then
-        KUBECTL=$(command -v kubectl)
+        KUBECTL=$(command -v kubectl || true)
         if [[ -z "$KUBECTL" ]]; then
-            KUBECTL=$(command -v oc)
+            KUBECTL=$(command -v oc || true)
         fi
     fi
 
     if [[ ! -x "${KUBECTL}" ]]; then
-        KUBECTL=$(command -v "${KUBECTL}")
+        KUBECTL=$(command -v "${KUBECTL}" || true)
     fi
 
     if [[ ! -x "${KUBECTL}" ]]; then
-        echo >&2 "ERROR: kubectl command (${KUBECTL}) not found or is not executable"
-        exit 1
+        if [[ -n "$KUBECTL" ]]; then
+            fatal "kubectl command ${KUBECTL} not found or is not executable"
+        else
+            fatal "kubectl command is not found"
+        fi
     fi
 
     # check if kubectl is OpenShift client
@@ -111,6 +135,10 @@ define-kubectl-funcs() {
         else
             echo "${ns}"
         fi
+    }
+
+    kube-current-server() {
+        run-kubectl-ctx config view --minify -o=jsonpath='{..server}'
     }
 
     kube-set-namespace() {
