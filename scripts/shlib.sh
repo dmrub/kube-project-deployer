@@ -12,7 +12,7 @@ fatal() {
     exit 1
 }
 
-msg() {
+message() {
     echo >&2 "$*"
 }
 
@@ -309,12 +309,12 @@ EOF
         ns_opt=(--namespace "$pod_ns")
     fi
 
-    [[ "$debug_flag" = "true" ]] && msg "[wait-for-pod] namespace option : ${ns_opt[*]}"
+    [[ "$debug_flag" = "true" ]] && message "[wait-for-pod] namespace option : ${ns_opt[*]}"
 
     trial=0
     running=false
     while ! $running; do
-        [ "$debug_flag" = "true" ] && msg "[wait-for-pod] Waiting for '$pod_name_prefix' pod ..."
+        [ "$debug_flag" = "true" ] && message "[wait-for-pod] Waiting for '$pod_name_prefix' pod ..."
 
         if ! pod_names=( $(run-kubectl-ctx get pods "${ns_opt[@]}" -o go-template='{{range.items}} {{ .metadata.name }} {{ .metadata.namespace }}{{end}}') ); then
             return 1
@@ -324,19 +324,19 @@ EOF
             break
         fi
 
-        [ "$debug_flag" = "true" ] && msg "[wait-for-pod] pod_names: ${pod_names[*]}"
+        [ "$debug_flag" = "true" ] && message "[wait-for-pod] pod_names: ${pod_names[*]}"
 
         for ((i = 0; i < ${#pod_names[@]}; i += 2)); do
             pod_name=${pod_names[i]}
             pod_ns=${pod_names[i + 1]}
 
             if [[ "$pod_name" == "$pod_name_prefix"* ]]; then
-                [ "$debug_flag" = "true" ] && msg "[wait-for-pod] Found pod $pod_name"
+                [ "$debug_flag" = "true" ] && message "[wait-for-pod] Found pod $pod_name"
                 running=false
                 check=0
                 while true; do
                     if phase=$(run-kubectl-ctx get pod --namespace="$pod_ns" "$pod_name" -o go-template='{{ .status.phase }}'); then
-                        [ "$debug_flag" = "true" ] && msg "[wait-for-pod] Pod $pod_name in phase $phase [$((check + 1))/$num_run_checks]"
+                        [ "$debug_flag" = "true" ] && message "[wait-for-pod] Pod $pod_name in phase $phase [$((check + 1))/$num_run_checks]"
                         case "$phase" in
                             Running)
                                 running=true
@@ -364,7 +364,7 @@ EOF
                     sleep "$delay"
                 done
                 if $running; then
-                    [[ "$debug_flag" = "true" ]] && msg "[wait-for-pod] Pod $pod_name running, exiting."
+                    [[ "$debug_flag" = "true" ]] && message "[wait-for-pod] Pod $pod_name running, exiting."
                     echo "$pod_name"
                     return 0
                 fi
@@ -375,7 +375,7 @@ EOF
             if [[ $trial -ge $num_trials ]]; then
                 break
             fi
-            [ "$debug_flag" = "true" ] && msg "[wait-for-pod] Trial $trial/$num_trials"
+            [ "$debug_flag" = "true" ] && message "[wait-for-pod] Trial $trial/$num_trials"
         fi
         sleep "$delay"
     done
