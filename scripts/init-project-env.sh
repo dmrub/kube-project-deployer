@@ -39,6 +39,10 @@ before-start() {
     local phase
 
     if is-true "$USE_OC_NEW_PROJECT"; then
+        if ! is-true "$OPENSHIFT_CLIENT"; then
+            error "USE_OC_NEW_PROJECT is true, but no OpenShift client was found"
+            return 1
+        fi
         if phase=$(oc-wait-for-project "$PROJECT_NAME"); then
             echo "* OpenShift project $PROJECT_NAME already exists"
         else
@@ -53,6 +57,11 @@ before-start() {
 after-stop() {
     if is-true "$USE_OC_NEW_PROJECT"; then
         local phase
+
+        if ! is-true "$OPENSHIFT_CLIENT"; then
+            error "USE_OC_NEW_PROJECT is true, but no OpenShift client was found"
+            return 1
+        fi
 
         if phase=$(oc-wait-for-project "$PROJECT_NAME"); then
             echo "* Deleting OpenShift project $PROJECT_NAME ..."

@@ -72,6 +72,9 @@ case "$COMMAND" in
         run-before-start-callback
 
         for kdir in "${KUSTOMIZE_DIRS[@]}"; do
+            if [[ ! -d "$kdir" ]]; then
+                fatal "The directory $kdir specified in the variable KUSTOMIZE_DIRS does not exist"
+            fi
             (
                 set -x;
                 run-kubectl-ctx apply --record -k "$kdir";
@@ -81,6 +84,9 @@ case "$COMMAND" in
     stop)
         for ((i=${#KUSTOMIZE_DIRS[@]}-1; i>=0; i--)); do
             kdir=${KUSTOMIZE_DIRS[$i]}
+            if [[ ! -d "$kdir" ]]; then
+                fatal "The directory $kdir specified in the variable KUSTOMIZE_DIRS does not exist"
+            fi
             (
                 set -x;
                 run-kubectl-ctx delete -k "$kdir" || true;
@@ -99,6 +105,9 @@ case "$COMMAND" in
             echo;
         fi
         for kdir in "${KUSTOMIZE_DIRS[@]}"; do
+            if [[ ! -d "$kdir" ]]; then
+                fatal "The directory $kdir specified in the variable KUSTOMIZE_DIRS does not exist"
+            fi
             (
                 run-kubectl-ctx get -k "$kdir" || true;
             )
