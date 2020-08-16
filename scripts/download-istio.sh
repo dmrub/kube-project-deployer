@@ -74,7 +74,7 @@ if [ -n "$INSTALL_DIR" ]; then
 fi
 
 if [ -x "istio/bin/istioctl" ]; then
-  printf "istio/bin/istioctl executable already exists, delete istio directory if you want to download it again\n"
+  printf "istio/bin/istioctl executable already exists, delete %s/istio directory if you want to download it again\n" "$PWD"
   exit 0
 fi
 
