@@ -52,23 +52,23 @@ define-kubectl-funcs() {
            ;;
     esac
 
-    if [[ -n "$TEST_KUBECTL" ]]; then
+    if [[ -n "${TEST_KUBECTL:-}" ]]; then
         KUBECTL=${TEST_KUBECTL}   # substitute for tests
-    elif [[ -n "$KUBECTL_BIN" ]]; then
+    elif [[ -n "${KUBECTL_BIN:-}" ]]; then
         KUBECTL=${KUBECTL_BIN}
-    elif [[ -z "$KUBECTL" ]]; then
+    elif [[ -z "${KUBECTL:-}" ]]; then
         KUBECTL=$(command -v kubectl || true)
-        if [[ -z "$KUBECTL" ]]; then
+        if [[ -z "${KUBECTL:-}" ]]; then
             KUBECTL=$(command -v oc || true)
         fi
     fi
 
-    if [[ ! -x "${KUBECTL}" ]]; then
-        KUBECTL=$(command -v "${KUBECTL}" || true)
+    if [[ ! -x "${KUBECTL:-}" ]]; then
+        KUBECTL=$(command -v "${KUBECTL:-}" || true)
     fi
 
-    if [[ ! -x "${KUBECTL}" ]]; then
-        if [[ -n "$KUBECTL" ]]; then
+    if [[ ! -x "${KUBECTL:-}" ]]; then
+        if [[ -n "${KUBECTL:-}" ]]; then
             fatal "kubectl command ${KUBECTL} not found or is not executable"
         else
             fatal "kubectl command is not found"
@@ -145,6 +145,23 @@ define-kubectl-funcs() {
         local ctx
         ctx=$(kube-current-context)
         run-kubectl-ctx config set-context "${ctx}" --namespace="${1}"
+    }
+
+    kube-server-version() {
+        local server_version major minor patch
+        server_version=$(run-kubectl-ctx --match-server-version=false version | grep "Server Version:")
+        echo "${server_version}" | \
+                sed -E "s/.*GitVersion:\"(v([0-9]+)\.([0-9]+)\.([0-9]+)).*/\1/"
+    }
+
+    # kubectl version | grep "Server Version:"  | sed -E "s/.*GitVersion:\"v([0-9]+)\.([0-9]+)\.([0-9]+).*/\1 \2 \3/"
+    kube-server-version-as-int() {
+        local server_version major minor patch
+        server_version=$(run-kubectl-ctx --match-server-version=false | grep "Server Version:")
+        read -r major minor patch < <(
+                echo "${server_version}" | \
+                sed -E "s/.*GitVersion:\"v([0-9]+)\.([0-9]+)\.([0-9]+).*/\1 \2 \3/")
+        printf "%02d%02d%02d" "${major}" "${minor}" "${patch}" | sed 's/^0*//'
     }
 }
 
