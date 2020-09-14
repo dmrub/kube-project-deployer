@@ -42,58 +42,20 @@ set-array-from-lines() {
     local "$1" && moIndirectArray "$1" "${result[@]}"
 }
 
-# _RUN_BEFORE_START : List of function names to be executed before start
-_RUN_BEFORE_START=()
-# _RUN_AFTER_STOP : List of function names to be executed after stop
-_RUN_AFTER_STOP=()
-
-
-before-start-callback-index() {
-    echo "${#_RUN_BEFORE_START[@]}"
-}
-
-run-before-start-callback() {
-    local cb_name
-    for cb_name in "${_RUN_BEFORE_START[@]}"; do
-        "$cb_name"
-    done
-}
-
-after-stop-callback-index() {
-    echo "${#_RUN_AFTER_STOP[@]}"
-}
-
-run-after-stop-callback() {
-    local cb_name
-    for cb_name in "${_RUN_AFTER_STOP[@]}"; do
-        "$cb_name"
-    done
-}
+# before-start callback is executed before "servicectl start" is executed
+declare-callback before-start
+# after-stop callback is executed after "servicectl stop" is executed
+declare-callback after-stop
 
 # load-script loads script with correctly defined THIS_DIR environment variable
 load-script() {
-    local SCRIPT_FILE=$1 THIS_DIR CB_NAME
+    local script_file=$1 THIS_DIR cb_name
     # shellcheck disable=SC2034
-    THIS_DIR=$( (cd "$(dirname -- "${SCRIPT_FILE}")" && pwd -P) )
+    THIS_DIR=$( (cd "$(dirname -- "${script_file}")" && pwd -P) )
     # shellcheck disable=SC1090
-    . "$SCRIPT_FILE"
+    . "$script_file"
 
-    # Register callbacks
-    if declare -F before-start > /dev/null; then
-        # Each config file can define callback with the same name,
-        # rename callback function to avoid collisions
-        CB_NAME=before-start-$(before-start-callback-index)
-        rename-fn before-start "$CB_NAME"
-        _RUN_BEFORE_START+=("$CB_NAME")
-    fi
-
-    if declare -F after-stop > /dev/null; then
-        # Each config file can define callback with the same name,
-        # rename callback function to avoid collisions
-        CB_NAME=after-stop-$(after-stop-callback-index)
-        rename-fn after-stop "$CB_NAME"
-        _RUN_AFTER_STOP+=("$CB_NAME")
-    fi
+    register-all-callbacks
 }
 
 # Set defaults

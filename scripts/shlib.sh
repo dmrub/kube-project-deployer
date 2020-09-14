@@ -37,6 +37,60 @@ rename-fn() {
     copy-fn "$@" && unset -f "$1";
 }
 
+_ALL_CB=()
+
+declare-callback() {
+    if [[ -z "${1:-}" ]]; then
+        echo >&2 "No callback name specified"
+        return 1
+    fi
+    local cb_name=$1 cb_var_name sh_code i
+    for i in "${_ALL_CB[@]}"; do
+        if [[ "$i" == "$cb_name" ]]; then
+            # callback was already registered
+            return 0
+        fi
+    done
+    _ALL_CB+=("$cb_name")
+    cb_var_name=${cb_name^^}
+    cb_var_name=_CB_${cb_var_name//[.-]/_}
+    printf -v sh_code "
+    %s=() # List of function names to be executed
+    run-%s-callback() {
+        local cb_name
+        for cb_name in \"\${%s[@]}\"; do
+            \"\$cb_name\" \"\$@\"
+        done
+    }
+    " "$cb_var_name" "$cb_name" "$cb_var_name"
+    eval "$sh_code"
+}
+
+register-callback() {
+    if [[ -z "${1:-}" ]]; then
+        echo >&2 "No callback name specified"
+        return 1
+    fi
+    local cb_name=$1 cb_var_name sh_code num_cb new_cb_name
+    cb_var_name=${cb_name^^}
+    cb_var_name=_CB_${cb_var_name//[.-]/_}
+    if declare -F "$cb_name" > /dev/null; then
+        # Each config file can define callback with the same name,
+        # rename callback function to avoid collisions
+        eval "num_cb=\${#${cb_var_name}[@]}"
+        new_cb_name=$cb_name-$num_cb
+        rename-fn "$cb_name" "$new_cb_name"
+        eval "${cb_var_name}+=(\"$new_cb_name\")"
+    fi
+}
+
+register-all-callbacks() {
+    local cb_name
+    for cb_name in "${_ALL_CB[@]}"; do
+        register-callback "$cb_name"
+    done
+}
+
 # Define kubectl-related functions
 define-kubectl-funcs() {
     case "$(uname)" in
